@@ -2,11 +2,6 @@ package eshop.controller;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.RequestDispatcher;
@@ -24,11 +19,6 @@ import eshop.model.ProductRepository;
 @WebServlet("/")
 public class ProductsController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	
-	private String driver;
-	private String url;
-	private String login;
-	private String pass;
 	
 	private ProductDao repository;
        
@@ -91,41 +81,5 @@ public class ProductsController extends HttpServlet {
 			response.sendRedirect("/eshop/index.jsp");
 		else
 			response.sendRedirect("/eshop/edit.jsp");
-	}
-
-	protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-	}
-
-	public String getDriver() {
-		return driver;
-	}
-
-	public void setDriver(String driver) {
-		this.driver = driver;
-	}
-
-	public String getUrl() {
-		return url;
-	}
-
-	public void setUrl(String url) {
-		this.url = url;
-	}
-
-	public String getLogin() {
-		return login;
-	}
-
-	public void setLogin(String login) {
-		this.login = login;
-	}
-
-	public String getPass() {
-		return pass;
-	}
-
-	public void setPass(String pass) {
-		this.pass = pass;
 	}
 }
