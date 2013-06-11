@@ -5,9 +5,9 @@
 <head>
 <meta charset="UTF-8">
 <title>Products</title>
-<style type="text/css">
+<style>
 	.page { width: 713px; margin: 0 auto; font:14px Arial; color:#333; }
-	.entry { border:1px solid #333; border-radius:5px; padding:10px 15px; } 
+	.entry { border:1px solid #333; border-radius:5px; padding:10px 15px; margin:5px 0; } 
 	.page .descr {float:left; width:300px;}
 	.page .buttons { float: right; width: 200px; }
 	.clear { clear:both; }
@@ -31,6 +31,7 @@
 						<div class="descr">
 							<p><%= p.getName() %></p>
 							<p>Price: $<%= p.getPrice() %></p>	
+							<p><a href="/eshop/products?id=<%= p.getId() %>">[edit]</a></p>
 						</div>
 						<div class="buttons">
 							<p class="add-to-cart">

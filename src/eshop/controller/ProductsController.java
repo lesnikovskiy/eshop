@@ -1,6 +1,7 @@
 package eshop.controller;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -17,61 +18,114 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import eshop.model.Product;
+import eshop.model.ProductDao;
+import eshop.model.ProductRepository;
 
 @WebServlet("/")
 public class ProductsController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	
+	private String driver;
+	private String url;
+	private String login;
+	private String pass;
+	
+	private ProductDao repository;
        
-    public ProductsController() {
-        super();
+    @Override
+    public void init() throws ServletException {
+    	super.init();
+    	   	
+    	String driver = getServletContext().getInitParameter("driver");
+    	String url = getServletContext().getInitParameter("url");
+    	String login = getServletContext().getInitParameter("login");
+    	String pass = getServletContext().getInitParameter("pass");
+    	
+    	repository = new ProductRepository(driver, url, login, pass);
     }
 
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
-		String p2 = request.getServletPath();
-		String p3 = request.getRequestURI();
-		List<Product> products = new ArrayList<Product>();
-		
-		Connection conn = null;
-		PreparedStatement statement = null;
-		ResultSet result = null;
-		
-		try {
-			Class.forName("com.mysql.jdbc.Driver").newInstance();
-			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/test", "root", "ruslan");
-			statement = conn.prepareStatement("select id, name, price from products");
-			result = statement.executeQuery();
-			while (result.next()) {
-				Product p = new Product(result.getInt(1), result.getString(2), result.getBigDecimal(3));
-				products.add(p);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				 result.close();
-				 statement.close();
-				 conn.close();
-			} catch (Exception e) {
-				e.printStackTrace();
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {	
+		String id = request.getParameter("id");
+		if (id != null) {		
+			Product p = repository.getProduct(Integer.parseInt(id));
+			if (p != null) {
+				request.setAttribute("product", p);
+				
+				ServletContext ctx = getServletContext();
+				RequestDispatcher view = ctx.getRequestDispatcher("/edit.jsp");
+				view.forward(request, response);
+				
+				return;
 			}
 		}
+		
+		List<Product> products = repository.getProducts();
 		
 		request.setAttribute("products", products);
 		
 		ServletContext ctx = getServletContext();
-		RequestDispatcher dispatcher = ctx.getRequestDispatcher("/");
-		dispatcher.forward(request, response);
+		RequestDispatcher view = ctx.getRequestDispatcher("/index.jsp");
+		view.forward(request, response);
 	}
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		boolean result = false;
 		
-	}
-
-	protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
+		String method = request.getParameter("method");
+		if (method.equalsIgnoreCase("post")) {
+			String name = request.getParameter("name");
+			BigDecimal price = new BigDecimal(request.getParameter("price"));
+			
+			result = repository.saveProduct(new Product(name, price));			
+		}
+		
+		if (method.equalsIgnoreCase("put")) {
+			String name = request.getParameter("name");
+			BigDecimal price = new BigDecimal(request.getParameter("price"));
+			int id = Integer.parseInt(request.getParameter("id"));
+			
+			result = repository.updateProduct(new Product(id, name, price));
+		}
+		
+		if (result)
+			response.sendRedirect("/eshop/index.jsp");
+		else
+			response.sendRedirect("/eshop/edit.jsp");
 	}
 
 	protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
+	}
+
+	public String getDriver() {
+		return driver;
+	}
+
+	public void setDriver(String driver) {
+		this.driver = driver;
+	}
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+	public String getLogin() {
+		return login;
+	}
+
+	public void setLogin(String login) {
+		this.login = login;
+	}
+
+	public String getPass() {
+		return pass;
+	}
+
+	public void setPass(String pass) {
+		this.pass = pass;
 	}
 }
