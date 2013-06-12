@@ -22,7 +22,7 @@
 				if (p == null) {
 			%>
 			<form id="edit-product-form" method="post" action="/eshop/products">
-				<input type="hidden" name="method" value="post"/>
+				<input type="hidden" name="action" value="new"/>
 				<label for="name">Product name:</label>
 				<input type="text" name="name" id="name" required />
 				<label for="price">Price:</label>
@@ -31,7 +31,7 @@
 			</form>
 			<% } else { %>
 			<form id="edit-product-form" method="post" action="/eshop/products">
-				<input type="hidden" name="method" value="put"/>
+				<input type="hidden" name="action" value="edit"/>
 				<input type="hidden" name="id" value="<%= p.getId() %>" />
 				<label for="name">Product name:</label>
 				<input type="text" name="name" id="name" value="<%= p.getName() %>" required />
