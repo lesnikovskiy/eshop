@@ -1,0 +1,89 @@
+// The array may be unordered
+Array.prototype.seqSearch = function(value) {
+    var arr = this;
+
+    for (var i = 0; i < arr.length; i++)
+        if (arr[i] === value)
+            return i;
+    
+    return -1;
+};
+
+// The array must be ordered
+Array.prototype.binarySearch = function(value) {
+    var arr = this;
+    var lowerBound = 0;
+    var upperBound = arr.length - 1;
+    var mid;
+
+    while (lowerBound <= upperBound) {                
+        mid = Math.ceil((upperBound + lowerBound) / 2);
+
+        if (arr[mid] === value) {
+            return mid;
+        } else if (value < arr[mid]) {                   
+            upperBound = mid - 1;            
+        } else {
+            lowerBound = mid + 1
+        }
+    }
+
+    return -1;
+};
+
+var ar = [1,2,3,4,5,6,7,8,9,10,11,12];
+var s1 = ar.binarySearch(10); // result 9
+ar[s1]; // result 10
+var s2 = ar.binarySearch(7); // result 6
+ar[s2]; // result 7
+var s3 = ar.seqSearch(11); // result 10
+ar[s3]; // result 11
+
+Array.prototype.min = function() {
+    var arr = this;
+    var min = arr[0];
+    for (var i = 0; i < arr.length; i++) 
+        if (arr[i] < min)
+            min = arr[i];
+
+    return min;
+};
+
+Array.prototype.max = function() {
+    var arr = this;
+    var max = arr[0];
+    for (var i = 0; i < arr.length; i++)
+        if (arr[i] > max)
+            max = arr[i];
+
+    return max;
+};
+
+var nums = [23,3,23,455,654656,45,4545,3,443];
+
+nums.min(); // 3
+nums.max(); // 654656
+
+// Self organizing sequential search algorithm, when most searched data are shifted to the beginning
+Array.prototype.orgSearch = function(value) {
+    var arr = this;
+    function swap(o, n) {
+        var temp = arr[o];
+        arr[o] = arr[n];
+        arr[n] = temp;
+    }
+
+    for (var i = 0; i < arr.length; i++)
+        if (arr[i] == value) {
+            swap(i, i -1);
+            return i;
+        }  
+
+    return -1;
+};    
+
+var nums = [4,5,7,878,5,4,43,23,2,343,4];
+nums.orgSearch(5); // 1
+nums; // [5, 4, 7, 878, 5, 4, 43, 23, 2, 343, 4]
+nums.orgSearch(878); // 3
+nums; // [5, 4, 878, 7, 5, 4, 43, 23, 2, 343, 4]

@@ -1,6 +1,8 @@
 package eshop.controller;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,11 +10,15 @@ import java.util.List;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
+
+import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 
 import eshop.model.CartLine;
 import eshop.model.FormAttributes;
@@ -21,6 +27,7 @@ import eshop.model.ProductDao;
 import eshop.model.ProductRepository;
 
 @WebServlet("/")
+@MultipartConfig
 public class ProductsController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
@@ -67,9 +74,44 @@ public class ProductsController extends HttpServlet {
 		RequestDispatcher view = ctx.getRequestDispatcher("/index.jsp");
 		view.forward(request, response);
 	}
+	
+	private String getUploadFileName(Part p) {
+		String file = "";
+		String header = "Content-Disposition";
+		
+		String[] strArray = p.getHeader(header).split(";");
+		for (String split : strArray) {
+			if (split.trim().startsWith("filename")) {
+				file = split.substring(split.indexOf("=") + 1);
+				file = file.trim().replace("\"", "");				
+			}
+		}
+		
+		return file;
+	}
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		boolean result = false;
+		
+		boolean isMultipart = ServletFileUpload.isMultipartContent(request);
+		if (isMultipart) {
+			for (Part part : request.getParts()) {
+				String name = part.getName();
+				InputStream stream = request.getPart(name).getInputStream();
+				String fileName = getUploadFileName(part);
+				String location = getServletContext().getRealPath("") + fileName;
+				FileOutputStream fileStream = new FileOutputStream(location);
+				int data = 0;
+				while ((data = stream.read()) != -1) {
+					fileStream.write(data);
+				}
+				
+				fileStream.close();
+				stream.close();
+				
+				result = true;
+			}
+		}
 		
 		String action = request.getParameter("action");
 		if (action == null || action.isEmpty()) {
