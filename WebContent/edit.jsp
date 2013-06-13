@@ -1,5 +1,4 @@
 <%@ page language="java" contentType="text/html; charset=utf-8" pageEncoding="utf-8"%> 
-<%@ page import="eshop.model.*" %>  
 <!DOCTYPE html>
 <html>
 <head>
@@ -17,29 +16,15 @@
 	<div class="page">
 		<fieldset>
 			<legend>Fill out fields</legend>
-			<% 
-				Product p = (Product) request.getAttribute("product");
-				if (p == null) {
-			%>
 			<form id="edit-product-form" method="post" action="/eshop/products">
-				<input type="hidden" name="action" value="new"/>
+				<input type="hidden" name="action" value="${attributes.action}"/>
+				<input type="hidden" name="id" value="${product.id}" />
 				<label for="name">Product name:</label>
-				<input type="text" name="name" id="name" required />
+				<input type="text" name="name" id="name" value="${product.name}" required />
 				<label for="price">Price:</label>
-				<input type="text" name="price" id="price" required />
+				<input type="text" name="price" id="price" value="${product.price}" required />
 				<input type="submit" value="add product" />
 			</form>
-			<% } else { %>
-			<form id="edit-product-form" method="post" action="/eshop/products">
-				<input type="hidden" name="action" value="edit"/>
-				<input type="hidden" name="id" value="<%= p.getId() %>" />
-				<label for="name">Product name:</label>
-				<input type="text" name="name" id="name" value="<%= p.getName() %>" required />
-				<label for="price">Price:</label>
-				<input type="text" name="price" id="price" value="<%= p.getPrice() %>" required />
-				<input type="submit" value="add product" />
-			</form>
-			<% } %>
 		</fieldset>
 	</div>	
 </body>

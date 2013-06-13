@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import eshop.model.CartLine;
+import eshop.model.FormAttributes;
 import eshop.model.Product;
 import eshop.model.ProductDao;
 import eshop.model.ProductRepository;
@@ -44,7 +45,11 @@ public class ProductsController extends HttpServlet {
 		if (id != null) {		
 			Product p = repository.getProduct(Integer.parseInt(id));
 			if (p != null) {
+				FormAttributes attrs = new FormAttributes();
+				attrs.setAction("edit");
+				
 				request.setAttribute("product", p);
+				request.setAttribute("attributes", attrs);
 				
 				ServletContext ctx = getServletContext();
 				RequestDispatcher view = ctx.getRequestDispatcher("/edit.jsp");
@@ -67,7 +72,7 @@ public class ProductsController extends HttpServlet {
 		boolean result = false;
 		
 		String action = request.getParameter("action");
-		if (action.equalsIgnoreCase("new")) {
+		if (action == null || action.isEmpty()) {
 			String name = request.getParameter("name");
 			BigDecimal price = new BigDecimal(request.getParameter("price"));
 			
@@ -115,14 +120,11 @@ public class ProductsController extends HttpServlet {
 				}
 			}
 			
-			RequestDispatcher view = request.getRequestDispatcher("/index.jsp");
-			view.forward(request, response);
-			
-			return;
+			result = true;
 		}
 		
 		if (result)
-			response.sendRedirect("/eshop/index.jsp");
+			response.sendRedirect("/eshop/products");
 		else
 			response.sendRedirect("/eshop/edit.jsp");
 	}

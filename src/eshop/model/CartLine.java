@@ -1,8 +1,13 @@
 package eshop.model;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 public class CartLine {
 	private Product product;
 	private int quantity;
+	
+	public CartLine() {}
 	
 	public CartLine(Product product, int quantity) {
 		this.product = product;
@@ -24,4 +29,15 @@ public class CartLine {
 	public void setQuantity(int quantity) {
 		this.quantity = quantity;
 	}
+	
+	public BigDecimal getPrice() {
+		BigDecimal itemCost = new BigDecimal(BigInteger.ZERO, 2);
+		BigDecimal totalCost = new BigDecimal(BigInteger.ZERO, 2);
+		
+		Product currentProduct = this.getProduct();
+		
+		itemCost = currentProduct.getPrice().multiply(new BigDecimal(this.getQuantity()));
+		
+		return totalCost.add(itemCost);
+	}	
 }

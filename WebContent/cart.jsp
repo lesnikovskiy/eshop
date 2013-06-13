@@ -1,6 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
 <%@ page import="java.util.*, eshop.model.*, java.math.*" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <%! String cartLinesKey = "products_session_key"; %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -33,52 +35,46 @@
 			<h1>Selected items:</h1>
 		</div>		
 		<div class="clear"></div>
-		<%
-			List<CartLine> cartLines = (ArrayList<CartLine>) session.getAttribute(cartLinesKey);
-			if (cartLines != null) {
-				%>
+		
+		<c:choose>
+			<c:when test="${empty sessionScope.products_session_key}">
+				<p>Shopping cart is empty</p>
+			</c:when>
+			<c:otherwise>
 				<div class="entry">
 					<div class="descr"><p><strong>Name</strong></p></div>
 					<div class="descr"><p><strong>Price</strong></p></div>
 					<div class="qty"><p><strong>Quantity</strong></p></div>
 					<div class="clear"></div>
 				</div>
-				<%		
 				
-				BigDecimal total = new BigDecimal(BigInteger.ZERO, 2);
-				for (CartLine c : cartLines) {
-					BigDecimal cost = c.getQuantity() > 1 
-									? Payment.calculateCost(c.getQuantity(), c.getProduct().getPrice()) 
-									: c.getProduct().getPrice();
-									
-					total = total.add(cost);
-				%>
+				<c:set var="cartlines" value="${sessionScope.products_session_key}"/>
+				<c:forEach items="${sessionScope.products_session_key}" var="line">
 					<div class="entry">
 						<div class="descr">
-							<p><%= c.getProduct().getName() %></p>
+							<p>${line.product.name}</p>
 						</div>
 						<div class="descr">
-							<p>$<%= cost %></p>
+							<p>$${line.price}</p>
 						</div>
 						<div class="qty">
-							<p><%= c.getQuantity() %></p>
+							<p>${line.quantity}</p>
 						</div>
 						<div class="clear"></div>
-					</div>					
-				<%
-				}				
-				%>
-					<div class="entry">
+					</div>
+				</c:forEach>		
+				<div class="entry">
 					<div class="descr"><p><strong>Total:</strong></p></div>
-					<div class="descr"><p><strong>$<%= total %></strong></p></div>
+					<div class="descr"><p><strong>$to be defined</strong></p></div>
 					<div class="qty"><p></p></div>
 					<div class="clear"></div>
 				</div>
-				<%
-			}
-		%>
+				<div class="clear"></div>
+			</c:otherwise>
+		</c:choose>
+		
 		<div class="buttons">
-			<form action="index.jsp">
+			<form action="products">
 				<input type="submit" value="continue shopping" class="cart-button" />
 			</form>
 			<form action="checkout.jsp">
