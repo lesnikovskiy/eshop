@@ -1,5 +1,6 @@
 package eshop.controller;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,7 +28,7 @@ import eshop.model.ProductDao;
 import eshop.model.ProductRepository;
 
 @WebServlet("/")
-@MultipartConfig
+@MultipartConfig // see tutorial http://docs.oracle.com/javaee/6/tutorial/doc/glraq.html
 public class ProductsController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
@@ -95,22 +96,20 @@ public class ProductsController extends HttpServlet {
 		
 		boolean isMultipart = ServletFileUpload.isMultipartContent(request);
 		if (isMultipart) {
-			for (Part part : request.getParts()) {
-				String name = part.getName();
-				InputStream stream = request.getPart(name).getInputStream();
-				String fileName = getUploadFileName(part);
-				String location = getServletContext().getRealPath("") + fileName;
-				FileOutputStream fileStream = new FileOutputStream(location);
-				int data = 0;
-				while ((data = stream.read()) != -1) {
-					fileStream.write(data);
-				}
-				
-				fileStream.close();
-				stream.close();
-				
-				result = true;
+			Part part = request.getPart("file");
+			InputStream stream = part.getInputStream();
+			String fileName = getUploadFileName(part);
+			String location = "/home/ruslan/workspace/eshop/WebContent/WEB-INF/tmp" + File.separator + fileName;
+			FileOutputStream fileStream = new FileOutputStream(new File(location));
+			int data = 0;
+			while ((data = stream.read()) != -1) {
+				fileStream.write(data);
 			}
+			
+			fileStream.close();
+			stream.close();
+			
+			result = true;
 		}
 		
 		String action = request.getParameter("action");
