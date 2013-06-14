@@ -1,10 +1,11 @@
 package eshop.controller;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,8 +20,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 
-import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
-
 import eshop.model.CartLine;
 import eshop.model.FormAttributes;
 import eshop.model.Product;
@@ -28,7 +27,8 @@ import eshop.model.ProductDao;
 import eshop.model.ProductRepository;
 
 @WebServlet("/")
-@MultipartConfig // see tutorial http://docs.oracle.com/javaee/6/tutorial/doc/glraq.html
+//see tutorial http://docs.oracle.com/javaee/6/tutorial/doc/glraq.html
+@MultipartConfig(maxFileSize=16177215) // maxFileSize up to 16 MB
 public class ProductsController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
@@ -74,50 +74,55 @@ public class ProductsController extends HttpServlet {
 		ServletContext ctx = getServletContext();
 		RequestDispatcher view = ctx.getRequestDispatcher("/index.jsp");
 		view.forward(request, response);
-	}
-	
-	private String getUploadFileName(Part p) {
-		String file = "";
-		String header = "Content-Disposition";
-		
-		String[] strArray = p.getHeader(header).split(";");
-		for (String split : strArray) {
-			if (split.trim().startsWith("filename")) {
-				file = split.substring(split.indexOf("=") + 1);
-				file = file.trim().replace("\"", "");				
-			}
-		}
-		
-		return file;
-	}
+	}	
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		boolean result = false;
-		
-		boolean isMultipart = ServletFileUpload.isMultipartContent(request);
-		if (isMultipart) {
-			Part part = request.getPart("file");
-			InputStream stream = part.getInputStream();
-			String fileName = getUploadFileName(part);
-			String location = "/home/ruslan/workspace/eshop/WebContent/WEB-INF/tmp" + File.separator + fileName;
-			FileOutputStream fileStream = new FileOutputStream(new File(location));
-			int data = 0;
-			while ((data = stream.read()) != -1) {
-				fileStream.write(data);
-			}
-			
-			fileStream.close();
-			stream.close();
-			
-			result = true;
-		}
 		
 		String action = request.getParameter("action");
 		if (action == null || action.isEmpty()) {
 			String name = request.getParameter("name");
 			BigDecimal price = new BigDecimal(request.getParameter("price"));
 			
-			result = repository.saveProduct(new Product(name, price));			
+			InputStream inputStream = null;
+			String mimeType = null;
+			
+			Part filePart = request.getPart("file");
+			if (filePart != null) {
+				inputStream = filePart.getInputStream();
+				mimeType = filePart.getContentType();
+			}
+			
+			Connection conn = null;
+			PreparedStatement statement = null;
+			
+			try {
+				Class.forName("com.mysql.jdbc.Driver").newInstance();
+				conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/test", "root", "ruslan");
+				statement = conn.prepareStatement("INSERT INTO products (name, price, mime, file) values (?, ?, ?, ?)");
+				statement.setString(1, name);
+				statement.setBigDecimal(2, price);
+				if (mimeType != null)
+					statement.setString(3, mimeType);
+				if (inputStream != null)
+					statement.setBlob(4, inputStream);
+				
+				int rowAffected = statement.executeUpdate();
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				try {
+					inputStream.close();
+					statement.close();
+					conn.close();
+					
+					result = true;
+				} catch (Exception e) {
+					e.printStackTrace();
+				}				
+			}
+			
+			//result = repository.saveProduct(new Product(name, price));			
 		}
 		
 		if (action.equalsIgnoreCase("edit")) {
@@ -168,5 +173,20 @@ public class ProductsController extends HttpServlet {
 			response.sendRedirect("/eshop/products");
 		else
 			response.sendRedirect("/eshop/edit.jsp");
+	}
+	
+	private String getUploadFileName(Part p) {
+		String file = "";
+		String header = "Content-Disposition";
+		
+		String[] strArray = p.getHeader(header).split(";");
+		for (String split : strArray) {
+			if (split.trim().startsWith("filename")) {
+				file = split.substring(split.indexOf("=") + 1);
+				file = file.trim().replace("\"", "");				
+			}
+		}
+		
+		return file;
 	}
 }

@@ -16,12 +16,14 @@
 	<div class="page">
 		<fieldset>
 			<legend>Fill out fields</legend>
-			<form id="edit-product-form" method="post" action="/eshop/products">
+			<form id="edit-product-form" method="post" enctype="multipart/form-data" action="/eshop/products">
 				<input type="hidden" name="action" value="${attributes.action}"/>
 				<input type="hidden" name="id" value="${product.id}" />
 				<label for="name">Product name:</label>
 				<input type="text" name="name" id="name" value="${product.name}" required />
 				<label for="price">Price:</label>
+				<label for="file">Select product image:</label>
+				<input type="file" name="file" />
 				<input type="text" name="price" id="price" value="${product.price}" required />
 				<input type="submit" value="add product" />
 			</form>
