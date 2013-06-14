@@ -32,11 +32,6 @@
 			<h1>Selected items:</h1>
 		</div>		
 		<div class="clear"></div>
-		<form method="post" enctype="multipart/form-data" action="products">
-			File to upload: <input type="file" name="file"><br/> <br/>
-		  	<input type="submit" value="Press"> to upload the file!
-		  	<input type="hidden" name="action" value="fileupload"/>
-		</form>
 		<c:choose>
 			<c:when test="${empty sessionScope.products_session_key}">
 				<p>Shopping cart is empty</p>

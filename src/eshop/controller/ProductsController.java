@@ -3,9 +3,6 @@ package eshop.controller;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -84,45 +81,18 @@ public class ProductsController extends HttpServlet {
 			String name = request.getParameter("name");
 			BigDecimal price = new BigDecimal(request.getParameter("price"));
 			
-			InputStream inputStream = null;
-			String mimeType = null;
-			
 			Part filePart = request.getPart("file");
 			if (filePart != null) {
-				inputStream = filePart.getInputStream();
-				mimeType = filePart.getContentType();
-			}
-			
-			Connection conn = null;
-			PreparedStatement statement = null;
-			
-			try {
-				Class.forName("com.mysql.jdbc.Driver").newInstance();
-				conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/test", "root", "ruslan");
-				statement = conn.prepareStatement("INSERT INTO products (name, price, mime, file) values (?, ?, ?, ?)");
-				statement.setString(1, name);
-				statement.setBigDecimal(2, price);
-				if (mimeType != null)
-					statement.setString(3, mimeType);
-				if (inputStream != null)
-					statement.setBlob(4, inputStream);
+				InputStream inputStream = filePart.getInputStream();
+				String mimeType = filePart.getContentType();
 				
-				int rowAffected = statement.executeUpdate();
-			} catch (Exception e) {
-				e.printStackTrace();
-			} finally {
-				try {
-					inputStream.close();
-					statement.close();
-					conn.close();
-					
-					result = true;
-				} catch (Exception e) {
-					e.printStackTrace();
-				}				
-			}
-			
-			//result = repository.saveProduct(new Product(name, price));			
+				if (inputStream.available() > 0)
+					result = repository.saveProduct(new Product(name, price, mimeType, inputStream));
+				else
+					result = repository.saveProduct(new Product(name, price));
+			} else {
+				result = repository.saveProduct(new Product(name, price));
+			}					
 		}
 		
 		if (action.equalsIgnoreCase("edit")) {
@@ -130,7 +100,18 @@ public class ProductsController extends HttpServlet {
 			BigDecimal price = new BigDecimal(request.getParameter("price"));
 			int id = Integer.parseInt(request.getParameter("id"));
 			
-			result = repository.updateProduct(new Product(id, name, price));
+			Part filePart = request.getPart("file");
+			if (filePart != null) {
+				InputStream inputStream = filePart.getInputStream();
+				String mimeType = filePart.getContentType();
+				
+				if (inputStream.available() > 0)
+					result = repository.updateProduct(new Product(id, name, price, mimeType, inputStream));	
+				else
+					result = repository.updateProduct(new Product(id, name, price));
+			} else {			
+				result = repository.updateProduct(new Product(id, name, price));
+			}
 		}
 		
 		if (action.equalsIgnoreCase("addToCart")) {
@@ -145,22 +126,22 @@ public class ProductsController extends HttpServlet {
 					if (cartLines == null) {
 						cartLines = new ArrayList<CartLine>();
 						cartLines.add(new CartLine(p, 1));
-					}
-					
-					boolean found = false;
-					
-					for (CartLine c : cartLines) {
-						Product cp = c.getProduct();
-						if (cp.getId() == p.getId()) {
-							int q = c.getQuantity();
-							q++;
-							c.setQuantity(q);
-							found = true;
+					} else {
+						boolean found = false;
+						
+						for (CartLine c : cartLines) {
+							Product cp = c.getProduct();
+							if (cp.getId() == p.getId()) {
+								int q = c.getQuantity();
+								q++;
+								c.setQuantity(q);
+								found = true;
+							}
 						}
-					}
-					
-					if (!found)
-						cartLines.add(new CartLine(p, 1));
+						
+						if (!found)
+							cartLines.add(new CartLine(p, 1));
+					}				
 										
 					session.setAttribute(PRODUCTS_SESSION_KEY, cartLines);
 				}
@@ -173,20 +154,5 @@ public class ProductsController extends HttpServlet {
 			response.sendRedirect("/eshop/products");
 		else
 			response.sendRedirect("/eshop/edit.jsp");
-	}
-	
-	private String getUploadFileName(Part p) {
-		String file = "";
-		String header = "Content-Disposition";
-		
-		String[] strArray = p.getHeader(header).split(";");
-		for (String split : strArray) {
-			if (split.trim().startsWith("filename")) {
-				file = split.substring(split.indexOf("=") + 1);
-				file = file.trim().replace("\"", "");				
-			}
-		}
-		
-		return file;
 	}
 }

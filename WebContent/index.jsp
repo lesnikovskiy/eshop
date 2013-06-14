@@ -51,7 +51,17 @@
 		<c:otherwise>
 			<c:forEach items="${requestScope.products}" var="p">
 				<div class="entry">
-					<div class="descr">
+					<div class="descr">	
+						<p>
+							<c:choose>
+								<c:when test="${empty p.file}">
+									no image preview
+								</c:when>
+								<c:otherwise>
+									<img src="getFile?id=${p.id}" width="250" />
+								</c:otherwise>
+							</c:choose>						
+						</p>					
 						<p>${p.name}</p>
 						<p>Price: $${p.price}</p>
 						<p><a href="products?id=${p.id}">[edit]</a></p>
