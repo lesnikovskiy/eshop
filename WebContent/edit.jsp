@@ -28,7 +28,14 @@
 				<label for="category">Category:</label>
 				<select name="category" id="category">
 					<c:forEach var="cat" items="${requestScope.categories}">
-						<option value="${cat.id}">${cat.name}</option>
+						<c:choose>
+							<c:when test="${cat.selected}">
+								<option value="${cat.id}" selected>${cat.name}</option>
+							</c:when>
+							<c:otherwise>
+								<option value="${cat.id}">${cat.name}</option>
+							</c:otherwise>
+						</c:choose>
 					</c:forEach>
 				</select>
 				<label for="file">Select product image:</label>

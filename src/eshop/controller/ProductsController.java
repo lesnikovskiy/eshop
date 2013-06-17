@@ -54,12 +54,7 @@ public class ProductsController extends HttpServlet {
 		String viewLocation = "/index.jsp";
 		
 		if (action != null && action.equals("edit")) {
-			viewLocation = "/edit.jsp";
-			
-			List<Category> categories = categoryDao.getCategories();
-			if (categories != null && categories.size() > 0) {
-				request.setAttribute("categories", categories);
-			}
+			viewLocation = "/edit.jsp";			
 			
 			String id = request.getParameter("id");
 			if (id != null) {		
@@ -69,7 +64,20 @@ public class ProductsController extends HttpServlet {
 					attrs.setAction("edit");
 					
 					request.setAttribute("product", p);
-					request.setAttribute("attributes", attrs);					
+					request.setAttribute("attributes", attrs);	
+					
+					List<Category> categories = categoryDao.getCategories();
+					for (Category c : categories) {
+						if (c.getId() == p.getCategory().getId()) {
+							c.setSelected(true);
+						}
+					}
+					request.setAttribute("categories", categories);
+				}
+			} else {
+				List<Category> categories = categoryDao.getCategories();
+				if (categories != null && categories.size() > 0) {
+					request.setAttribute("categories", categories);
 				}
 			}
 		} else {		
