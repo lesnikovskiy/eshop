@@ -1,4 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=utf-8" pageEncoding="utf-8"%> 
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -8,7 +10,7 @@
 	.page { width: 713px; margin: 0 auto; font:14px Arial; color:#333; }
 	fieldset { width:480px; border-radius:5px; }
 	#edit-product-form label { display: block; float: left; width: 150px; text-align: right; clear: both; margin:3px; }
-	#edit-product-form input[type=text] { display: block; float: right; width: 300px; margin: 3px;}
+	#edit-product-form input[type=text], #edit-product-form input[type=file], #edit-product-form select { display: block; float: right; width: 300px; margin: 3px;}
 	#edit-product-form input[type=submit] { display: block; float: right; width:300px; margin: 3px; float:right; clear: both; }
 </style>
 </head>
@@ -20,11 +22,17 @@
 				<input type="hidden" name="action" value="${attributes.action}"/>
 				<input type="hidden" name="id" value="${product.id}" />
 				<label for="name">Product name:</label>
-				<input type="text" name="name" id="name" value="${product.name}" required />
+				<input type="text" name="name" id="name" value="${product.name}" required />				
 				<label for="price">Price:</label>
+				<input type="text" name="price" id="price" value="${product.price}" required />
+				<label for="category">Category:</label>
+				<select name="category" id="category">
+					<c:forEach var="cat" items="${requestScope.categories}">
+						<option value="${cat.id}">${cat.name}</option>
+					</c:forEach>
+				</select>
 				<label for="file">Select product image:</label>
 				<input type="file" name="file" />
-				<input type="text" name="price" id="price" value="${product.price}" required />
 				<input type="submit" value="add product" />
 			</form>
 		</fieldset>

@@ -9,33 +9,39 @@ public class Product {
 	private BigDecimal price;
 	private String mime;
 	private InputStream file;
+	private Category category;
+	private boolean isDeleted;
 	
 	public Product() {}
 	
-	public Product(String name, BigDecimal price) {
-		this.name = name;
-		this.price = price;
+	public Product(String name, BigDecimal price, Category category) {
+		this.setName(name);
+		this.setPrice(price);
+		this.setCategory(category);
 	}
 	
-	public Product(int id, String name, BigDecimal price) {
+	public Product(int id, String name, BigDecimal price, Category category) {
 		this.setId(id);
 		this.setName(name); 
 		this.setPrice(price);
+		this.setCategory(category);
 	}
 	
-	public Product(String name, BigDecimal price, String mime, InputStream file) {
+	public Product(String name, BigDecimal price, String mime, InputStream file, Category category) {
 		this.setName(name); 
 		this.setPrice(price);
-		this.mime = mime;
-		this.file = file;
+		this.setMime(mime);
+		this.setFile(file);
+		this.setCategory(category);
 	}
 	
-	public Product(int id, String name, BigDecimal price, String mime, InputStream file) {
+	public Product(int id, String name, BigDecimal price, String mime, InputStream file, Category category) {
 		this.setId(id);
 		this.setName(name); 
 		this.setPrice(price);
-		this.mime = mime;
-		this.file = file;
+		this.setMime(mime);
+		this.setFile(file);
+		this.setCategory(category);
 	}
 
 	public int getId() {
@@ -76,5 +82,21 @@ public class Product {
 
 	public void setFile(InputStream file) {
 		this.file = file;
+	}
+
+	public Category getCategory() {
+		return category;
+	}
+
+	public void setCategory(Category category) {
+		this.category = category;
+	}
+
+	public boolean isDeleted() {
+		return isDeleted;
+	}
+
+	public void setDeleted(boolean isDeleted) {
+		this.isDeleted = isDeleted;
 	}
 }

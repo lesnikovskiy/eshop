@@ -64,7 +64,7 @@
 						</p>					
 						<p>${p.name}</p>
 						<p>Price: $${p.price}</p>
-						<p><a href="products?id=${p.id}">[edit]</a></p>
+						<p><a href="products?action=edit&id=${p.id}">[edit]</a></p>
 					</div>
 					<div class="buttons">
 						<div>
@@ -82,7 +82,7 @@
 	</c:choose>
 	
 	<div>
-		<a href="edit.jsp">Add new product</a>
+		<a href="products?action=edit">Add new product</a>
 	</div>
 	</div>
 </body>

@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
@@ -18,6 +17,9 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 
 import eshop.model.CartLine;
+import eshop.model.Category;
+import eshop.model.CategoryDao;
+import eshop.model.CategoryRepository;
 import eshop.model.FormAttributes;
 import eshop.model.Product;
 import eshop.model.ProductDao;
@@ -32,6 +34,7 @@ public class ProductsController extends HttpServlet {
 	private static final String PRODUCTS_SESSION_KEY = "products_session_key";
 	
 	private ProductDao repository;
+	private CategoryDao categoryDao;
        
     @Override
     public void init() throws ServletException {
@@ -43,33 +46,39 @@ public class ProductsController extends HttpServlet {
     	String pass = getServletContext().getInitParameter("pass");
     	
     	repository = new ProductRepository(driver, url, login, pass);
+    	categoryDao = new CategoryRepository(driver, url, login, pass);
     }
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {	
-		String id = request.getParameter("id");
-		if (id != null) {		
-			Product p = repository.getProduct(Integer.parseInt(id));
-			if (p != null) {
-				FormAttributes attrs = new FormAttributes();
-				attrs.setAction("edit");
-				
-				request.setAttribute("product", p);
-				request.setAttribute("attributes", attrs);
-				
-				ServletContext ctx = getServletContext();
-				RequestDispatcher view = ctx.getRequestDispatcher("/edit.jsp");
-				view.forward(request, response);
-				
-				return;
+		String action = request.getParameter("action");
+		String viewLocation = "/index.jsp";
+		
+		if (action != null && action.equals("edit")) {
+			viewLocation = "/edit.jsp";
+			
+			List<Category> categories = categoryDao.getCategories();
+			if (categories != null && categories.size() > 0) {
+				request.setAttribute("categories", categories);
 			}
+			
+			String id = request.getParameter("id");
+			if (id != null) {		
+				Product p = repository.getProduct(Integer.parseInt(id));
+				if (p != null) {
+					FormAttributes attrs = new FormAttributes();
+					attrs.setAction("edit");
+					
+					request.setAttribute("product", p);
+					request.setAttribute("attributes", attrs);					
+				}
+			}
+		} else {		
+			List<Product> products = repository.getProducts();
+			
+			request.setAttribute("products", products);
 		}
 		
-		List<Product> products = repository.getProducts();
-		
-		request.setAttribute("products", products);
-		
-		ServletContext ctx = getServletContext();
-		RequestDispatcher view = ctx.getRequestDispatcher("/index.jsp");
+		RequestDispatcher view = request.getRequestDispatcher(viewLocation);
 		view.forward(request, response);
 	}	
 
@@ -80,18 +89,18 @@ public class ProductsController extends HttpServlet {
 		if (action == null || action.isEmpty()) {
 			String name = request.getParameter("name");
 			BigDecimal price = new BigDecimal(request.getParameter("price"));
-			
+			int catId = Integer.parseInt(request.getParameter("category"));
 			Part filePart = request.getPart("file");
 			if (filePart != null) {
 				InputStream inputStream = filePart.getInputStream();
 				String mimeType = filePart.getContentType();
 				
 				if (inputStream.available() > 0)
-					result = repository.saveProduct(new Product(name, price, mimeType, inputStream));
+					result = repository.saveProduct(new Product(name, price, mimeType, inputStream, new Category(catId)));
 				else
-					result = repository.saveProduct(new Product(name, price));
+					result = repository.saveProduct(new Product(name, price, new Category(catId)));
 			} else {
-				result = repository.saveProduct(new Product(name, price));
+				result = repository.saveProduct(new Product(name, price, new Category(catId)));
 			}					
 		}
 		
@@ -99,18 +108,19 @@ public class ProductsController extends HttpServlet {
 			String name = request.getParameter("name");
 			BigDecimal price = new BigDecimal(request.getParameter("price"));
 			int id = Integer.parseInt(request.getParameter("id"));
+			int catId = Integer.parseInt(request.getParameter("category"));
 			
 			Part filePart = request.getPart("file");
 			if (filePart != null) {
 				InputStream inputStream = filePart.getInputStream();
-				String mimeType = filePart.getContentType();
+				String mimeType = filePart.getContentType();			
 				
 				if (inputStream.available() > 0)
-					result = repository.updateProduct(new Product(id, name, price, mimeType, inputStream));	
+					result = repository.updateProduct(new Product(id, name, price, mimeType, inputStream, new Category(catId)));	
 				else
-					result = repository.updateProduct(new Product(id, name, price));
+					result = repository.updateProduct(new Product(id, name, price, new Category(catId)));
 			} else {			
-				result = repository.updateProduct(new Product(id, name, price));
+				result = repository.updateProduct(new Product(id, name, price, new Category(catId)));
 			}
 		}
 		
