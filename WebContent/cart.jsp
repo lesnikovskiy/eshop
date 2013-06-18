@@ -44,8 +44,7 @@
 					<div class="clear"></div>
 				</div>
 				
-				<c:set var="cartlines" value="${sessionScope.products_session_key}"/>
-				<c:forEach items="${sessionScope.products_session_key}" var="line">
+				<c:forEach items="${sessionScope.products_session_key.cartLines}" var="line">
 					<div class="entry">
 						<div class="descr">
 							<p>${line.product.name}</p>
@@ -61,7 +60,7 @@
 				</c:forEach>		
 				<div class="entry">
 					<div class="descr"><p><strong>Total:</strong></p></div>
-					<div class="descr"><p><strong>$to be defined</strong></p></div>
+					<div class="descr"><p><strong>$${products_session_key.totalPrice}</strong></p></div>
 					<div class="qty"><p></p></div>
 					<div class="clear"></div>
 				</div>
@@ -73,7 +72,7 @@
 			<form action="products">
 				<input type="submit" value="continue shopping" class="cart-button" />
 			</form>
-			<form action="checkout.jsp">
+			<form action="products?action=checkout">
 				<input type="submit" value="checkout" class="cart-button" />
 			</form>
 		</div>

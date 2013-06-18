@@ -36,8 +36,8 @@
 					Shopping cart is empty.
 				</c:when>
 				<c:otherwise>
-					You've got <b>${sessionScope.products_session_key.size()}</b> item(s) in your 
-						<a href="cart.jsp" class="checkout">shopping cart</a>
+					You've got <b>${sessionScope.products_session_key.cartLines.size()}</b> item(s) in your 
+						<a href="products?action=cart" class="checkout">shopping cart</a>
 				</c:otherwise>
 			</c:choose>			
 		</p>

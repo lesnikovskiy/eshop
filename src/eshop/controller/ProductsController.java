@@ -24,6 +24,7 @@ import eshop.model.FormAttributes;
 import eshop.model.Product;
 import eshop.model.ProductDao;
 import eshop.model.ProductRepository;
+import eshop.model.ShoppingCart;
 
 @WebServlet("/")
 //see tutorial http://docs.oracle.com/javaee/6/tutorial/doc/glraq.html
@@ -47,43 +48,28 @@ public class ProductsController extends HttpServlet {
     	
     	repository = new ProductRepository(driver, url, login, pass);
     	categoryDao = new CategoryRepository(driver, url, login, pass);
-    }
+    }    
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {	
 		String action = request.getParameter("action");
+		action = action == null ? "products" : action;
 		String viewLocation = "/index.jsp";
 		
-		if (action != null && action.equals("edit")) {
-			viewLocation = "/edit.jsp";			
-			
-			String id = request.getParameter("id");
-			if (id != null) {		
-				Product p = repository.getProduct(Integer.parseInt(id));
-				if (p != null) {
-					FormAttributes attrs = new FormAttributes();
-					attrs.setAction("edit");
-					
-					request.setAttribute("product", p);
-					request.setAttribute("attributes", attrs);	
-					
-					List<Category> categories = categoryDao.getCategories();
-					for (Category c : categories) {
-						if (c.getId() == p.getCategory().getId()) {
-							c.setSelected(true);
-						}
-					}
-					request.setAttribute("categories", categories);
-				}
-			} else {
-				List<Category> categories = categoryDao.getCategories();
-				if (categories != null && categories.size() > 0) {
-					request.setAttribute("categories", categories);
-				}
-			}
-		} else {		
-			List<Product> products = repository.getProducts();
-			
-			request.setAttribute("products", products);
+		switch (action) {
+			case "edit":
+				viewLocation = "/edit.jsp";			
+				HandleEditGetAction(request);				
+				break;
+			case "cart":
+				viewLocation = "/cart.jsp";
+				break;
+			case "checkout":
+				viewLocation = "/checkout.jsp";
+				break;
+			default:
+				viewLocation = "/index.jsp";
+				HandleProductsGetAction(request);
+				break;
 		}
 		
 		RequestDispatcher view = request.getRequestDispatcher(viewLocation);
@@ -139,15 +125,16 @@ public class ProductsController extends HttpServlet {
 				if (p != null) {
 					HttpSession session = request.getSession();
 					
-					@SuppressWarnings("unchecked")
-					List<CartLine> cartLines = (ArrayList<CartLine>) session.getAttribute(PRODUCTS_SESSION_KEY);
-					if (cartLines == null) {
-						cartLines = new ArrayList<CartLine>();
+					ShoppingCart shoppingCart = (ShoppingCart) session.getAttribute(PRODUCTS_SESSION_KEY);
+					if (shoppingCart == null) {
+						shoppingCart = new ShoppingCart();
+						List<CartLine> cartLines = new ArrayList<CartLine>();
 						cartLines.add(new CartLine(p, 1));
+						shoppingCart.setCartLines(cartLines);
 					} else {
 						boolean found = false;
 						
-						for (CartLine c : cartLines) {
+						for (CartLine c : shoppingCart.getCartLines()) {
 							Product cp = c.getProduct();
 							if (cp.getId() == p.getId()) {
 								int q = c.getQuantity();
@@ -158,10 +145,10 @@ public class ProductsController extends HttpServlet {
 						}
 						
 						if (!found)
-							cartLines.add(new CartLine(p, 1));
+							shoppingCart.getCartLines().add(new CartLine(p, 1));
 					}				
 										
-					session.setAttribute(PRODUCTS_SESSION_KEY, cartLines);
+					session.setAttribute(PRODUCTS_SESSION_KEY, shoppingCart);
 				}
 			}
 			
@@ -173,4 +160,36 @@ public class ProductsController extends HttpServlet {
 		else
 			response.sendRedirect("/eshop/edit.jsp");
 	}
+	
+	private void HandleEditGetAction(HttpServletRequest request) {
+    	String id = request.getParameter("id");
+		if (id != null) {		
+			Product p = repository.getProduct(Integer.parseInt(id));
+			if (p != null) {
+				FormAttributes attrs = new FormAttributes();
+				attrs.setAction("edit");
+				
+				request.setAttribute("product", p);
+				request.setAttribute("attributes", attrs);	
+				
+				List<Category> categories = categoryDao.getCategories();
+				for (Category c : categories) {
+					if (c.getId() == p.getCategory().getId()) {
+						c.setSelected(true);
+					}
+				}
+				request.setAttribute("categories", categories);
+			}
+		} else {
+			List<Category> categories = categoryDao.getCategories();
+			if (categories != null && categories.size() > 0) {
+				request.setAttribute("categories", categories);
+			}
+		}
+    }
+    
+    private void HandleProductsGetAction(HttpServletRequest request) {
+    	List<Product> products = repository.getProducts();			
+		request.setAttribute("products", products);
+    }
 }
